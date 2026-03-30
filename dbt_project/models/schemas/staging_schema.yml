@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: stg_traffic_readings
+    columns:
+      - name: sensor_id
+        tests: [not_null]
+      - name: reading_timestamp
+        tests: [not_null, unique]
+      - name: traffic_volume
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 10000
+      - name: hour_of_day
+        tests:
+          - accepted_values:
+              values: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+      - name: day_of_week
+        tests:
+          - accepted_values:
+              values: [0,1,2,3,4,5,6]
+
+  - name: stg_weather
+    columns:
+      - name: weather_timestamp
+        tests: [not_null]
+      - name: temp_fahrenheit
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: -50
+              max_value: 130
+      - name: humidity_pct
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+      - name: weather_severity
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 10
+
+  - name: mart_hourly_traffic
+    columns:
+      - name: surrogate_key
+        tests: [not_null, unique]
+      - name: traffic_level
+        tests:
+          - accepted_values:
+              values: ['low', 'medium', 'high', 'congested']
+    tests:
+      - dbt_utils.relationships_where:
+          to: ref('stg_sensors')
+          field: sensor_id
+          from_condition: "sensor_id IS NOT NULL"
+
+  - name: mart_daily_summary
+    columns:
+      - name: sensor_id
+        tests: [not_null]
+      - name: traffic_date
+        tests: [not_null]
+      - name: avg_volume
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 10000
+      - name: peak_volume
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 10000

@@ -1,0 +1,116 @@
+version: 2
+
+sources:
+  - name: raw
+    database: TRAFFIC_DB
+    schema: RAW
+    tables:
+      - name: traffic_events
+        description: "Raw traffic sensor events from Delta Lake"
+        columns:
+          - name: sensor_id
+            description: "Unique identifier for traffic sensor"
+            tests:
+              - not_null
+          - name: timestamp
+            description: "Timestamp of sensor reading"
+            tests:
+              - not_null
+          - name: traffic_volume
+            description: "Number of vehicles detected"
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 0
+                  max_value: 10000
+          - name: speed_mph
+            description: "Average speed in mph"
+          - name: occupancy_pct
+            description: "Road occupancy percentage"
+          - name: road_name
+            description: "Name of the road"
+          - name: direction
+            description: "Direction of traffic"
+          - name: latitude
+            description: "Sensor latitude"
+          - name: longitude
+            description: "Sensor longitude"
+          - name: year
+            description: "Year of reading"
+          - name: month
+            description: "Month of reading"
+          - name: day
+            description: "Day of reading"
+
+      - name: weather_updates
+        description: "Raw weather data from API"
+        columns:
+          - name: timestamp
+            description: "Weather data timestamp"
+            tests:
+              - not_null
+          - name: latitude
+            description: "Weather location latitude"
+          - name: longitude
+            description: "Weather location longitude"
+          - name: temp_fahrenheit
+            description: "Temperature in Fahrenheit"
+            tests:
+              - dbt_utils.accepted_range:
+                  min_value: -50
+                  max_value: 130
+          - name: humidity_pct
+            description: "Humidity percentage"
+          - name: wind_speed_mph
+            description: "Wind speed in mph"
+          - name: weather_main
+            description: "Main weather condition"
+          - name: weather_description
+            description: "Detailed weather description"
+          - name: visibility_miles
+            description: "Visibility in miles"
+          - name: clouds_pct
+            description: "Cloud coverage percentage"
+          - name: rain_1h_mm
+            description: "Rainfall in last hour"
+          - name: snow_1h_mm
+            description: "Snowfall in last hour"
+
+      - name: holidays
+        description: "US federal holidays"
+        columns:
+          - name: date
+            description: "Holiday date"
+            tests:
+              - not_null
+              - unique
+          - name: name
+            description: "Holiday name"
+            tests:
+              - not_null
+
+      - name: sensor_metadata
+        description: "Sensor metadata with SCD Type 2"
+        columns:
+          - name: sensor_id
+            description: "Unique sensor identifier"
+            tests:
+              - not_null
+          - name: road_name
+            description: "Sensor road name"
+          - name: city
+            description: "Sensor city"
+          - name: direction
+            description: "Traffic direction"
+          - name: latitude
+            description: "Sensor latitude"
+          - name: longitude
+            description: "Sensor longitude"
+          - name: is_active
+            description: "Is sensor currently active"
+          - name: valid_from
+            description: "SCD Type 2 valid from date"
+          - name: valid_to
+            description: "SCD Type 2 valid to date"
+          - name: is_current
+            description: "Is this the current record"

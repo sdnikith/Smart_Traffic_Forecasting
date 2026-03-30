@@ -1,0 +1,34 @@
+traffic_snowflake:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      warehouse: TRAFFIC_TRANSFORM_WH
+      database: TRAFFIC_DB
+      schema: STAGING
+      role: TRANSFORM_ROLE
+      threads: 4
+      client_session_keep_alive: false
+      connect_timeout: 30
+      retry_all: true
+      retry_count: 3
+      query_tag: dbt-traffic-analytics
+    
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      warehouse: TRAFFIC_TRANSFORM_WH
+      database: TRAFFIC_DB
+      schema: ANALYTICS
+      role: TRANSFORM_ROLE
+      threads: 8
+      client_session_keep_alive: false
+      connect_timeout: 30
+      retry_all: true
+      retry_count: 3
+      query_tag: dbt-traffic-analytics-prod

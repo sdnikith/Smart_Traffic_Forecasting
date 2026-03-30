@@ -1,0 +1,37 @@
+name: traffic_analytics
+version: 1.0.0
+config-version: 2
+profile: traffic_snowflake
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+
+vars:
+  volume_min: 0
+  volume_max: 10000
+  rush_hour_start: 7
+  rush_hour_end: 19
+  weather_severity_threshold: 5
+  anomaly_threshold: 2.5
+
+models:
+  traffic_analytics:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: ephemeral
+    marts:
+      +materialized: incremental
+      +schema: analytics
+      +incremental_strategy: merge
+      +unique_key: surrogate_key
+      +cluster_by: ['sensor_id', 'reading_timestamp']
+      +tags: ['analytics', 'traffic']
+
+on-run-end:
+  - "{{ dbt_utils.log_results('run_results') }}"
+  - "{{ dbt_utils.log_table_info('table_sizes') }}"

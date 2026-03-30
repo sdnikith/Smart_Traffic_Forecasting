@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  spark-master:
+    image: bitnami/spark:3.4
+    hostname: spark-master
+    ports:
+      - "8083:8083"  # Spark Master Web UI
+      - "7077:7077"  # Master Port
+      - "6066:6066"  # REST API
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_MASTER_WEBUI_PORT=8083
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_REST_PORT=6066
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_MEMORY=2G
+      - SPARK_DAEMON_MEMORY=2G
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_DRIVER_MEMORY=1G
+      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_EXECUTOR_CORES=2
+      - SPARK_WORKER_CORES=2
+      - SPARK_MASTER_CORES=4
+    volumes:
+      - ./jars:/opt/bitnami/spark/jars
+      - ./conf:/opt/bitnami/spark/conf
+      - spark-master-data:/opt/bitnami/spark/data
+    networks:
+      - traffic-platform
+
+  spark-worker-1:
+    image: bitnami/spark:3.4
+    hostname: spark-worker-1
+    depends_on:
+      - spark-master
+    ports:
+      - "8084:8084"  # Worker Web UI
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=4
+      - SPARK_WORKER_INSTANCES=1
+      - SPARK_WORKER_WEBUI_PORT=8084
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_EXECUTOR_CORES=2
+    volumes:
+      - ./jars:/opt/bitnami/spark/jars
+      - ./conf:/opt/bitnami/spark/conf
+      - spark-worker-1-data:/opt/bitnami/spark/data
+    networks:
+      - traffic-platform
+
+  spark-worker-2:
+    image: bitnami/spark:3.4
+    hostname: spark-worker-2
+    depends_on:
+      - spark-master
+    ports:
+      - "8085:8085"  # Worker Web UI
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=4
+      - SPARK_WORKER_INSTANCES=1
+      - SPARK_WORKER_WEBUI_PORT=8085
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_EXECUTOR_CORES=2
+    volumes:
+      - ./jars:/opt/bitnami/spark/jars
+      - ./conf:/opt/bitnami/spark/conf
+      - spark-worker-2-data:/opt/bitnami/spark/data
+    networks:
+      - traffic-platform
+
+  spark-history-server:
+    image: bitnami/spark:3.4
+    hostname: spark-history-server
+    depends_on:
+      - spark-master
+    ports:
+      - "18080:18080"  # History Server Web UI
+    environment:
+      - SPARK_MODE=history
+      - SPARK_HISTORY_FS_LOGDIR=file:///opt/bitnami/spark/history
+      - SPARK_HISTORY_UI_PORT=18080
+      - SPARK_HISTORY_CLEANER_ENABLED=true
+      - SPARK_HISTORY_CLEANER_INTERVAL=1d
+      - SPARK_HISTORY_CLEANER_MAXAGE=7d
+    volumes:
+      - ./history:/opt/bitnami/spark/history
+      - ./jars:/opt/bitnami/spark/jars
+      - ./conf:/opt/bitnami/spark/conf
+    networks:
+      - traffic-platform
+
+  spark-thrift-server:
+    image: bitnami/spark:3.4
+    hostname: spark-thrift-server
+    depends_on:
+      - spark-master
+    ports:
+      - "10000:10000"  # JDBC/ODBC Port
+      - "10001:10001"  # Thrift Server Web UI
+    environment:
+      - SPARK_MODE=thrift
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_THRIFT_MEMORY=2G
+      - SPARK_THRIFT_CORES=2
+      - SPARK_THRIFT_SPARK_MASTER_WEBUI_PORT=8083
+      - SPARK_THRIFT_UI_PORT=10001
+      - SPARK_THRIFT_PORT=10000
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes:
+      - ./jars:/opt/bitnami/spark/jars
+      - ./conf:/opt/bitnami/spark/conf
+    networks:
+      - traffic-platform
+
+volumes:
+  spark-master-data:
+  spark-worker-1-data:
+  spark-worker-2-data:
+
+networks:
+  traffic-platform:
+    external: true
